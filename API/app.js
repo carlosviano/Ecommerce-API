@@ -16,7 +16,20 @@ const productoDos = {
 };
 const productos = [productoUno,productoDos];
 
+const usuarioUno = {
+    email: "carlitosviano@gmail.com",
+    password: "12345"
+};
+
+const usuarioDos = {
+    email: "nachoviano@gmail.com",
+    password: "holahola123"
+}
+
+const usuarios = [usuarioUno,usuarioDos];
+
 app.use(cors());
+app.use(express.json());
 
 app.get("/", function(request, response){
     response.send("Bienvenido a mi Ecommerce")
@@ -31,7 +44,7 @@ app.get("/detalleProducto", function(request,response){
         id:1,
         nombre: "Bananas",
         stock: 120,
-        descripcion: "kfewpfwmfpwodw`pdpkdnqidjqbdkdLDkdñqoifj´`"
+        descripcion: "kfewpfwmfpwodw`pdpkdnqidjqbdkdLDkdñqoifj"
     };
     const detalleDos = {
         id:2,
@@ -46,13 +59,28 @@ app.get("/detalleProducto", function(request,response){
 app.get("/producto/:id", function(request, response){
 const productoId = request.params.id
 
-for(p of productos){
+for(const p of productos){
     if(productoId == p.id){
         response.send(p)
     }
 }
-
 });
+
+app.post("/login", function(request, response){
+    const email = request.body.email;
+    const password = request.body.password;
+
+    console.log(email,password);
+
+    for(const u of usuarios){
+        if(email === u.email && password === u.password){
+            response.status(200).send();
+        }
+    }
+
+    response.status(401).send();
+
+})
 
 app.listen(8000, function(){
     console.log("API lista para recibir llamadas")
