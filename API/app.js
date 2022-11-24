@@ -1,7 +1,11 @@
 let express = require("express");
 let cors = require("cors");
+let mysql = require("mysql");
 let app = express();
 
+/**
+ * Constantes
+ */
 const productoUno = {
     id: 1,
     nombre: "Bananas",
@@ -18,7 +22,7 @@ const productos = [productoUno,productoDos];
 
 const usuarioUno = {
     email: "carlitosviano@gmail.com",
-    password: "12345"
+    password: "holahola"
 };
 
 const usuarioDos = {
@@ -27,9 +31,51 @@ const usuarioDos = {
 }
 
 const usuarios = [usuarioUno,usuarioDos];
+/**
+ * MySQL
+ */
 
+let connection = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password:"12345",
+    database: "world"
+});
+
+
+/**
+ * Servicios API
+ */
 app.use(cors());
 app.use(express.json());
+
+app.get("/ciudadBaseDatos",function(request,response){
+    connection.connect(function(error){
+        if (error){
+            console.log(`No es posible conectarse al servidor:  ${error}`)
+    
+            return;
+        }
+        console.log("Conectado a MySQL")
+    });
+
+    connection.query('Select * from city where name = ?',["Kabul"],function(error,results,fields){
+        if (error){ 
+            console.log(`Se ha producido un error al mostrar la query: ${error}`);
+            return;
+        }
+        console.log(results)
+        response.send(results)
+    })
+    
+    // connection.end(function(error){
+    //     if (error){
+    //         console.log(`No se ha podido cerrar la conexion: ${error}`);
+    //         return;
+    //     }
+    //     console.log("Conexion con MySQL cerrada");
+    // }); 
+})
 
 app.get("/", function(request, response){
     response.send("Bienvenido a mi Ecommerce")
@@ -67,7 +113,7 @@ for(const p of productos){
 });
 
 app.post("/login", function(request, response){
-    const email = request.body.email;
+    const email= request.body.email;
     const password = request.body.password;
 
     console.log(email,password);
