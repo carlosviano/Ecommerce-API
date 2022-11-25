@@ -110,7 +110,7 @@ app.get("/productoBaseDatos",function(request,response){
         console.log("Conectado a MySQL")
     });
 
-    connection.query('Select * from producto',[],function(error,results,fields){
+    connection.query('Select * from usuario',[],function(error,results,fields){
         if (error){ 
             console.log(`Se ha producido un error al mostrar la query: ${error}`);
             return;
@@ -128,6 +128,76 @@ app.get("/productoBaseDatos",function(request,response){
     // }); 
 });
 
+app.post("/loginBBDD",function(request,response){ //login comparando el usuario y contraseña con los datos en la bbdd
+    const email= request.body.email;
+    const password = request.body.password;
+    connection.connect(function(error){
+        if (error){
+            console.log(`No es posible conectarse al servidor:  ${error}`)
+    
+            return;
+        }
+        console.log("Conectado a MySQL")
+    });
+    connection.query('Select * from usuario where email = ? && password = ?',[email,password],function(error,results,fields){
+        if(error){
+            console.log(`Se ha producido un error al mostrar la query ${error}`);
+            return;
+        } if (results.length > 0){ 
+            response.status(200).send();
+        }
+        console.log(results);
+        response.status(401).send();
+    });
+})
+
+app.post("/registroBBDD", function(request,response){ 
+    const usuarioRegistro = request.body.usuarioRegistro;
+    const emailRegistro = request.body.emailRegistro;
+    const passwordRegistro = request.body.passwordRegistro;
+    const nombreRegistro = request.body.nombreRegistro;
+    const apellidoRegistro = request.body.apellidoRegistro;
+    connection.connect(function(error){
+        if(error){
+            console.log(`No es posible conectarse al servidor: ${error}`)
+            return;
+        }
+        console.log("Conectado a MySQL")
+    });
+    connection.query(`Insert into usuario (usuario,email,password,nombre,apellidos) VALUES (?,?,?,?,?)`,[usuarioRegistro,emailRegistro,passwordRegistro,nombreRegistro,apellidoRegistro],function(error,results,fields){
+        if(error){
+            console.log(`Se ha producido un error al mostrar la query: ${error}`);
+            response.status(401).send();
+        } 
+       response.send(results)
+       console.log(results)
+    })
+
+})
+
+app.post("/finalizarPedido", function(request,response){ 
+    let total;
+    let fecha;
+    let tarjeta;
+    let direccion;
+
+    connection.connect(function(error){ 
+        if(error){
+            console.log(`No es posible conectarse al servidor: ${error}`)
+            return;
+        }
+        console.log("Conectado a MySQL")
+    });
+    connection.query('Select * from producto')
+    connection.query(`Insert into pedido (total,fecha,tarjeta,direccion) VALUES (?,?,?,?)`,[total,fecha,tarjeta,direccion]),function(error,results,fields){ 
+        if(error){
+            console.log(`Se ha producido un error al mostrar la query: ${error}`)
+            response.status(401).send();
+        }
+        response.send(results);
+        console.log(results)
+    }
+})
 
 app.listen(8000, function(){
     console.log("API lista para recibir llamadas")
