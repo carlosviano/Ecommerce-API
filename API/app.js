@@ -39,7 +39,7 @@ let connection = mysql.createConnection({
     host: "localhost",
     user: "root",
     password:"12345",
-    database: "world"
+    database: "ecommerce"
 });
 
 
@@ -48,34 +48,6 @@ let connection = mysql.createConnection({
  */
 app.use(cors());
 app.use(express.json());
-
-app.get("/ciudadBaseDatos",function(request,response){
-    connection.connect(function(error){
-        if (error){
-            console.log(`No es posible conectarse al servidor:  ${error}`)
-    
-            return;
-        }
-        console.log("Conectado a MySQL")
-    });
-
-    connection.query('Select * from city where name = ?',["Kabul"],function(error,results,fields){
-        if (error){ 
-            console.log(`Se ha producido un error al mostrar la query: ${error}`);
-            return;
-        }
-        console.log(results)
-        response.send(results)
-    })
-    
-    // connection.end(function(error){
-    //     if (error){
-    //         console.log(`No se ha podido cerrar la conexion: ${error}`);
-    //         return;
-    //     }
-    //     console.log("Conexion con MySQL cerrada");
-    // }); 
-})
 
 app.get("/", function(request, response){
     response.send("Bienvenido a mi Ecommerce")
@@ -128,6 +100,36 @@ app.post("/login", function(request, response){
 
 })
 
+app.get("/productoBaseDatos",function(request,response){
+    connection.connect(function(error){
+        if (error){
+            console.log(`No es posible conectarse al servidor:  ${error}`)
+    
+            return;
+        }
+        console.log("Conectado a MySQL")
+    });
+
+    connection.query('Select * from producto',[],function(error,results,fields){
+        if (error){ 
+            console.log(`Se ha producido un error al mostrar la query: ${error}`);
+            return;
+        }
+        console.log(results)
+        response.send(results)
+    })
+    
+    // connection.end(function(error){
+    //     if (error){
+    //         console.log(`No se ha podido cerrar la conexion: ${error}`);
+    //         return;
+    //     }
+    //     console.log("Conexion con MySQL cerrada");
+    // }); 
+});
+
+
 app.listen(8000, function(){
     console.log("API lista para recibir llamadas")
-})
+});
+
