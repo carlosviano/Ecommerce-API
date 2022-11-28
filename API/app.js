@@ -176,11 +176,11 @@ app.post("/registroBBDD", function(request,response){
 })
 
 app.post("/finalizarPedido", function(request,response){ 
-    let total;
-    let fecha;
-    let tarjeta;
-    let direccion;
+  const total = request.body.t;
+  const productos = request.body.p; 
+  const tarjeta = request.body.tar;
 
+    console.log(productos)
     connection.connect(function(error){ 
         if(error){
             console.log(`No es posible conectarse al servidor: ${error}`)
@@ -188,16 +188,27 @@ app.post("/finalizarPedido", function(request,response){
         }
         console.log("Conectado a MySQL")
     });
-    connection.query('Select * from producto')
-    connection.query(`Insert into pedido (total,fecha,tarjeta,direccion) VALUES (?,?,?,?)`,[total,fecha,tarjeta,direccion]),function(error,results,fields){ 
+ 
+        connection.query(`Insert into pedido (usuario,total,fecha,cupon,tarjeta,direccion,estado,envio,tipopago) VALUES (?,?,?,?,?,?,?,?,?)`,["1",total,"2022-11-28","1","7","1","pagado","5","Tarjeta"],function(error,results,fields){ 
         if(error){
-            console.log(`Se ha producido un error al mostrar la query: ${error}`)
-            response.status(401).send();
+            console.log(`Se ha producido un error al mostrar la query: ${error}`);
+            response.status(400).send();
         }
+        console.log(results)
+        let numeroPedido = results.insertId
+       for(const p of productos){
+        connection.query(`Insert into pedidodetalle (pedido,producto,cantidad,precio,cupon,opinion) VALUES (?,?,?,?,?,?)`,[numeroPedido,p.id,1,p.precio,"1","1"],function(error,results,fields){
+            if(error){
+                console.log(`Se ha producido un error al mostrar la query: ${error}`);
+                response.status(400).send();
+            }
+        })
+       }
         response.send(results);
         console.log(results)
-    }
-})
+    });
+
+});
 
 app.listen(8000, function(){
     console.log("API lista para recibir llamadas")
