@@ -42,6 +42,28 @@ let connection = mysql.createConnection({
     database: "ecommerce"
 });
 
+function conectar(){
+    connection.connect(function(error){
+        if (error){
+            console.log(`No es posible conectarse al servidor:  ${error}`)
+    
+            return;
+        }
+        console.log("Conectado a MySQL")
+    });
+}
+conectar();
+
+function ejecutarQuery(query,params,callback){
+    connection.query(query,params,function(error,results,fields){
+        if(error){
+            console.log(`Se ha producido un error al mostrar la query ${error}`);
+            return;
+        }
+        callback(results)
+    });
+
+}
 
 /**
  * Servicios API
@@ -101,15 +123,6 @@ app.post("/login", function(request, response){
 })
 
 app.get("/productoBaseDatos",function(request,response){
-    connection.connect(function(error){
-        if (error){
-            console.log(`No es posible conectarse al servidor:  ${error}`)
-    
-            return;
-        }
-        console.log("Conectado a MySQL")
-    });
-
     connection.query('Select * from usuario',[],function(error,results,fields){
         if (error){ 
             console.log(`Se ha producido un error al mostrar la query: ${error}`);
@@ -131,14 +144,6 @@ app.get("/productoBaseDatos",function(request,response){
 app.post("/loginBBDD",function(request,response){ //login comparando el usuario y contraseña con los datos en la bbdd
     const email= request.body.email;
     const password = request.body.password;
-    connection.connect(function(error){
-        if (error){
-            console.log(`No es posible conectarse al servidor:  ${error}`)
-    
-            return;
-        }
-        console.log("Conectado a MySQL")
-    });
     connection.query('Select * from usuario where email = ? && password = ?',[email,password],function(error,results,fields){
         if(error){
             console.log(`Se ha producido un error al mostrar la query ${error}`);
@@ -157,13 +162,6 @@ app.post("/registroBBDD", function(request,response){
     const passwordRegistro = request.body.passwordRegistro;
     const nombreRegistro = request.body.nombreRegistro;
     const apellidoRegistro = request.body.apellidoRegistro;
-    connection.connect(function(error){
-        if(error){
-            console.log(`No es posible conectarse al servidor: ${error}`)
-            return;
-        }
-        console.log("Conectado a MySQL")
-    });
     connection.query(`Insert into usuario (usuario,email,password,nombre,apellidos) VALUES (?,?,?,?,?)`,[usuarioRegistro,emailRegistro,passwordRegistro,nombreRegistro,apellidoRegistro],function(error,results,fields){
         if(error){
             console.log(`Se ha producido un error al mostrar la query: ${error}`);
@@ -181,13 +179,6 @@ app.post("/finalizarPedido", function(request,response){
   const tarjeta = request.body.tar;
 
     console.log(productos)
-    connection.connect(function(error){ 
-        if(error){
-            console.log(`No es posible conectarse al servidor: ${error}`)
-            return;
-        }
-        console.log("Conectado a MySQL")
-    });
  
         connection.query(`Insert into pedido (usuario,total,fecha,cupon,tarjeta,direccion,estado,envio,tipopago) VALUES (?,?,?,?,?,?,?,?,?)`,["1",total,"2022-11-28","1","7","1","pagado","5","Tarjeta"],function(error,results,fields){ 
         if(error){
