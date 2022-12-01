@@ -1,36 +1,9 @@
 let express = require("express");
 let cors = require("cors");
 let mysql = require("mysql");
+const {MongoClient} = require("mongodb");
 let app = express();
 
-/**
- * Constantes
- */
-const productoUno = {
-    id: 1,
-    nombre: "Bananas",
-    stock: 120,
-    precio: 10.9,
-};
-const productoDos = {
-    id:2,
-    nombre: "Manzana",
-    stock: 80,
-    precio: 10.8,
-};
-const productos = [productoUno,productoDos];
-
-const usuarioUno = {
-    email: "carlitosviano@gmail.com",
-    password: "holahola"
-};
-
-const usuarioDos = {
-    email: "nachoviano@gmail.com",
-    password: "holahola123"
-}
-
-const usuarios = [usuarioUno,usuarioDos];
 /**
  * MySQL
  */
@@ -63,6 +36,21 @@ function ejecutarQuery(query,params,callback){
         callback(results)
     });
 
+}
+
+/** 
+ * MONGODB
+*/
+
+const mongoClient = new MongoClient("mongodb://localhost:27017");
+function ejecutarQueryMongoDB(collection,filtro,orden,callbackPorDocumento,callback,error){
+    mongoClient.db("ecommerce")
+    .collection(collection)
+    .find(filtro)
+    .sort(orden)
+    .forEach(callbackPorDocumento)
+    .then(callback)
+    .catch(error);
 }
 
 /**
@@ -132,13 +120,6 @@ app.get("/productoBaseDatos",function(request,response){
         response.send(results)
     })
     
-    // connection.end(function(error){
-    //     if (error){
-    //         console.log(`No se ha podido cerrar la conexion: ${error}`);
-    //         return;
-    //     }
-    //     console.log("Conexion con MySQL cerrada");
-    // }); 
 });
 
 app.post("/loginBBDD",function(request,response){ //login comparando el usuario y contraseña con los datos en la bbdd
@@ -201,7 +182,60 @@ app.post("/finalizarPedido", function(request,response){
 
 });
 
-app.listen(8000, function(){
+/**
+ * Llamadas API MongoDB
+ */
+
+ app.get("/productos",function(request,response){
+    let productos = []
+    ejecutarQueryMongoDB("Productos",{},{id: -1},
+    (producto)=> productos.push(
+        {id:producto._id,
+        nombre:producto.nombre,
+        categoria:producto.categoria,
+        stock:producto.stock,
+        precio: producto.precio,
+        img: producto.img    
+    }), 
+    ()=> response.send(productos), 
+    () => response.status(400));
+});
+
+app.get("/pedidos",function(request,response){ 
+    let pedidos = [];
+    ejecutarQueryMongoDB("Pedidos",{},{"_id": 1},
+    (pedido)=> pedidos.push(
+        {id:pedido._id,
+        usuario:pedido.usuario,
+        productos:pedido.productos,
+        total:pedido.total,
+        direccion:pedido.direccion,
+        estado:pedido.estado
+    }),
+    () => response.send(pedidos),
+    ()=> response.status(400));
+});
+
+mongoClient.connect().then(function(){
+    console.log("Conectado a MongoDB")
+
+    // mongoClient.db("ecommerce")  //Esto y ejecutarQueryMongoDB es exactamente lo mismo pero refactprizado
+    // .collection("Usuario")
+    // .find({})
+    // .sort({})
+    // .forEach((usuario) => console.log(usuario))
+    // .then(() => console.log("Ok"))
+    // .catch(() => console.log("Error"));
+
+    // ejecutarQueryMongoDB("Usuario",{},{},
+    // (usuario)=> console.log(usuario), 
+    // ()=> console.log("ok!"), 
+    // () => console.log("Error"))
+    
+    app.listen(8000, function(){
     console.log("API lista para recibir llamadas")
+});
+}).catch(function(){
+    console.log("Error: no se puede conectar a MongoDB");
 });
 
