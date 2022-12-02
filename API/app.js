@@ -216,6 +216,34 @@ app.get("/pedidos",function(request,response){
     ()=> response.status(400));
 });
 
+app.get("/productosDestacadosMongoDB",function(request,response){
+    let productosDestacados = []
+    ejecutarQueryMongoDB("Productos",{},{},
+    (producto)=> productosDestacados.push(
+        {id:producto._id,
+            nombre:producto.nombre,
+            categoria:producto.categoria,
+            stock:producto.stock,
+            precio: producto.precio,
+            img: producto.img
+        }),
+        ()=> response.send(productosDestacados),
+        () => response.status(400));
+})
+
+app.post("/loginMongoDB",function(request,response){
+    let usuarios = [];
+    ejecutarQueryMongoDB("Usuario",{email: request.body.email, password: request.body.password},{},
+    (usuario)=> usuarios.push({email: usuario.email, password: usuario.password}),
+    ()=> {
+    if(usuarios.length > 0){
+        response.send(usuarios)
+    }
+    response.status(401).send()},
+    ()=> response.status(400));
+})
+
+
 mongoClient.connect().then(function(){
     console.log("Conectado a MongoDB")
 
